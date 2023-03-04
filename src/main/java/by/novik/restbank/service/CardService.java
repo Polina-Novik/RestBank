@@ -1,51 +1,64 @@
 package by.novik.restbank.service;
 
-import by.novik.restexample.converter.AnimalConverter;
-import by.novik.restexample.dto.AnimalRequest;
-import by.novik.restexample.dto.AnimalResponse;
-import by.novik.restexample.entity.Animal;
-import by.novik.restexample.repository.AnimalRepository;
+
+import by.novik.restbank.converter.CardConverter;
+import by.novik.restbank.dto.CardInformationResponse;
+import by.novik.restbank.dto.ClientInformationResponse;
+import by.novik.restbank.entity.Card;
+import by.novik.restbank.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 
-public class AnimalService2 {
-    private final AnimalRepository repository;
-    private final AnimalConverter converter;
+public class CardService {
+    private final CardRepository repository;
+    private final CardConverter converter;
 
-    public AnimalResponse save(AnimalRequest animalRequest) { //request и response посуто шифруем чтобы не все клиентуопказывать
-        Animal animal=converter.convert(animalRequest);
-       Animal animal2= repository.save(animal); //тот что сохранился
-        AnimalResponse animalResponse=converter.convert(animal2);
-        return animalResponse; //получили реквест, конвентировали в животное, сохранили, отослали респонс
-       // return converter.convert(repository.save(converter.convert(animalRequest))); - все 4 строчки в 1
+
+    public ClientInformationResponse findClientInformation(Long cardNumber, String password) {
+        Card card = repository.findCard(cardNumber).orElseThrow(() -> new RuntimeException("entity not found"));
+        if (card.getPassword().equals(password)) {
+            return converter.convertClient(card);
+        } else {
+            return null;
+        }
     }
 
-    //возвр респонс, берет реквест
-    public AnimalResponse save(Long id, AnimalRequest animalRequest) { //то что пришло из реквест возвр конвертируем и шлем в респнс
-//        Animal animal=converter.convert(id, animalRequest); - здесь отличие от прошлого
-//        Animal animal2= repository.save(animal);
-//        AnimalResponse animalResponse=converter.convert(animal2);
-//        return animalResponse;
-        return converter.convert(repository.save(converter.convert(id, animalRequest)));
+    public CardInformationResponse findCardInformation(Long cardNumber, String password) {
+        Card card = repository.findCard(cardNumber).orElseThrow(() -> new RuntimeException("entity not found"));
+        if (card.getPassword().equals(password)) {
+            return converter.convert(card);
+        } else {
+            return null;
+        }
     }
 
-    public AnimalResponse findById(Long id) {
-         Animal animal=repository.findById(id).orElseThrow(() -> new RuntimeException("entity not found"));
-    return converter.convert(animal); //это энимал респонс
+    public CardInformationResponse payByCard(Long cardNumber, String password, int price) {
+        Card card = repository.findCard(cardNumber).orElseThrow(() -> new RuntimeException("entity not found"));
+        if (price < card.getSum() && card.getPassword().equals(password)) {
+            card.setSum(card.getSum() - price);
+            return converter.convert(repository.save(card));
+        } else {
+            return null;
+        }
+
     }
 
-    public List<AnimalResponse> findAll() {
-        return converter.convert(repository.findAll()); //в сервисе логика конвертируем
-    }
+    public CardInformationResponse remittance(Long cardNumber1, String password1, int price, Long cardNumber2) {
+        Card card1 = repository.findCard(cardNumber1).orElseThrow(() -> new RuntimeException("entity not found"));
+        Card card2 = repository.findCard(cardNumber2).orElseThrow(() -> new RuntimeException("entity not found"));
+        if (price < card1.getSum() && card1.getPassword().equals(password1)) {
+            card1.setSum(card1.getSum() - price);
+            card2.setSum(card2.getSum() + price);
+            converter.convert(repository.save(card2));
+            return converter.convert(repository.save(card1));
+        } else {
+            return null;
+        }
 
-    public void delete(Long id) {
-        repository.delete(id);
     }
 }

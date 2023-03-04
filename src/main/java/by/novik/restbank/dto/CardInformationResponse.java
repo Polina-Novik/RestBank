@@ -3,10 +3,10 @@ package by.novik.restbank.dto;
 import lombok.Data;
 
 @Data
-public class CardResponse {
+public class CardInformationResponse {
 
 
-    private String cardNumber;
+    Long cardNumber;
     private String name;
     private String surname;
     private String date;

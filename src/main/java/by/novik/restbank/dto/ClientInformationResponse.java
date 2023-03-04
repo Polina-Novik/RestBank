@@ -1,2 +1,9 @@
-package by.novik.restbank.dto;public class ClientInformationResponse {
+package by.novik.restbank.dto;
+
+import lombok.Data;
+
+@Data
+public class ClientInformationResponse {
+    private String name;
+    private String surname;
 }

@@ -1,49 +1,139 @@
 package by.novik.restbank.controller;
 
-import by.novik.restexample.dto.AnimalRequest;
-import by.novik.restexample.dto.AnimalResponse;
-import by.novik.restexample.service.AnimalService2;
+
+import by.novik.restbank.dto.CardInformationResponse;
+import by.novik.restbank.dto.ClientInformationResponse;
+
+
+import by.novik.restbank.service.CardService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-//@Hidden //больше третий не показывается
-@Tag(name="Third controller",description = "this is my third controller with transfer object pattern")
+
+@Tag(name = "controller", description = "this is my controller with transfer object pattern")
 @RequiredArgsConstructor
-@RestController //отличие в ресте контроллера! тут проще типо.спринг пон что не надо ни на какую страницу отпр вас
-@RequestMapping("animals3")
-public class ThirdAnimalController {
-    private final AnimalService2 animalService2;
-    @GetMapping //раньше возвр строчку, теперь лист
-    public List<AnimalResponse> findAll() {
-        return animalService2.findAll(); //никакой логики и тд
-    }
+@RestController
+@RequestMapping("card")
+public class CardController {
+    private final CardService cardService;
 
-    @GetMapping("{id}")
-    public AnimalResponse findById(@PathVariable Long id) {
-        return animalService2.findById(id);
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED) //иначе можно сказать не сохранило. не 200 ок а 201
-    public AnimalResponse save(@RequestBody AnimalRequest animal) {
-
-        return animalService2.save(animal);
-    }
-
-    @PutMapping("{id}")
+    @PostMapping("client")
     @ResponseStatus(HttpStatus.OK)
-    public AnimalResponse update(@PathVariable Long id, AnimalRequest animal) {
-
-        return animalService2.save(id, animal);
+    @Operation(summary = "Find information about client", description = "This method returns name and " +
+            "surname if client is present",
+            responses = {@ApiResponse(responseCode = "200",
+                    description = "client's information:",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ClientInformationResponse.class),
+                            examples = @ExampleObject(value = "{\n" +
+                                    "  \"name\": \"Ben\",\n" +
+                                    "  \"surname\": \"Smith\"\n" +
+                                    "}")
+                    )}),
+                    @ApiResponse(responseCode = "404",
+                            description = "client not found", content = @Content)
+            })
+    public ClientInformationResponse findClientInformation(@Parameter(name = "cardNumber",
+            description = "Enter card number", required = true) @RequestParam Long cardNumber, @Parameter(name
+            = "password", description = "Enter the password of your personal account", required =
+            true) @RequestParam String password) {
+        return cardService.findClientInformation(cardNumber, password);
     }
 
-    @DeleteMapping("{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT) //чтоб показыало что все нормально но я ничего не возвращал
-    public void delete(@PathVariable Long id) {
-        animalService2.delete(id);
+
+    @PostMapping("information")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Find information about card", description = "This method returns name, surname, " +
+            "card number, card validity period, card balance if card is present",
+            responses = {@ApiResponse(responseCode = "200",
+                    description = "card information:",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CardInformationResponse.class),
+                            examples = @ExampleObject(value = "{\n" +
+                                    "  \"cardNumber\": 1111111111111111,\n" +
+                                    "  \"name\": \"Ben\",\n" +
+                                    "  \"surname\": \"Smith\",\n" +
+                                    "  \"date\": \"02/23\",\n" +
+                                    "  \"sum\": 1000\n" +
+                                    "}")
+                    )}),
+                    @ApiResponse(responseCode = "404",
+                            description = "card not found", content = @Content)
+            })
+    public CardInformationResponse findCardInformation(@Parameter(name = "cardNumber",
+            description = "Enter card number", required = true) @RequestParam Long cardNumber,
+                                                       @Parameter(name = "password",
+                                                               description = "Enter the password of your personal account", required = true)
+                                                       @RequestParam String password) {
+        return cardService.findCardInformation(cardNumber, password);
     }
-    //http://localhost:8080/swagger-ui/index.html
+
+    @PostMapping("pay")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Card payment", description = "This is a payment method if card is present",
+            responses = {@ApiResponse(responseCode = "200",
+                    description = "card information:",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CardInformationResponse.class),
+                            examples = @ExampleObject(value = "{\n" +
+                                    "  \"cardNumber\": 1111111111111111,\n" +
+                                    "  \"name\": \"Ben\",\n" +
+                                    "  \"surname\": \"Smith\",\n" +
+                                    "  \"date\": \"02/23\",\n" +
+                                    "  \"sum\": 1000\n" +
+                                    "}")
+                    )}),
+                    @ApiResponse(responseCode = "404",
+                            description = "card not found", content = @Content)
+            })
+    public CardInformationResponse payByCard(@Parameter(name = "cardNumber",
+            description = "Enter card number", required = true) @RequestParam Long cardNumber,
+                                             @Parameter(name = "password",
+                                                     description = "Enter the password of your personal account", required = true)
+                                             @RequestParam String password, @Parameter(name = "price",
+            description = "Payment amount", required = true) @RequestParam int price) {
+        return cardService.payByCard(cardNumber, password, price);
+    }
+
+    @PostMapping("remittance")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Remittance", description = "This method is needed to transfer money from " +
+            "one card to another if card is present",
+            responses = {@ApiResponse(responseCode = "200",
+                    description = "card information:",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CardInformationResponse.class),
+                            examples = @ExampleObject(value = "{\n" +
+                                    "  \"cardNumber\": 1111111111111111,\n" +
+                                    "  \"name\": \"Ben\",\n" +
+                                    "  \"surname\": \"Smith\",\n" +
+                                    "  \"date\": \"02/23\",\n" +
+                                    "  \"sum\": 1000\n" +
+                                    "}")
+                    )}),
+                    @ApiResponse(responseCode = "404",
+                            description = "card not found", content = @Content)
+            })
+    public CardInformationResponse remittance(@Parameter(name = "cardNumber1",
+            description = "Enter your card number", required = true)
+                                              @RequestParam Long cardNumber1,
+                                              @Parameter(name = "password1",
+                                                      description = "Enter the password of your personal account", required = true)
+                                              @RequestParam String password1, @Parameter(name = "price",
+            description = "Transfer amount", required = true)
+                                              @RequestParam int price, @Parameter(name = "cardNumber2",
+            description = "Enter the card number to which you want to transfer money", required = true)
+                                              @RequestParam Long cardNumber2) {
+        return cardService.remittance(cardNumber1, password1, price, cardNumber2);
+    }
+
 }

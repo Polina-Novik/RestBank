@@ -1,7 +1,8 @@
-package by.novik.restexample.config;
+package by.novik.restbank.config;
 
 
-import by.novik.restexample.entity.Animal;
+import by.novik.restbank.entity.Card;
+
 import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -16,6 +17,7 @@ import java.util.Properties;
 @RequiredArgsConstructor
 public class SessionConfig {
     private final HibernateConfig config;
+
     @Bean
     public SessionFactory getSessionFactory() {
         try {
@@ -23,7 +25,7 @@ public class SessionConfig {
             Properties settings = getProperties();
 
             configuration.setProperties(settings);
-           configuration.addAnnotatedClass(Animal.class);
+            configuration.addAnnotatedClass(Card.class);
 
             ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                     .applySettings(configuration.getProperties()).build();
@@ -45,15 +47,11 @@ public class SessionConfig {
         settings.put(AvailableSettings.DIALECT, config.getDialect());
         settings.put(AvailableSettings.SHOW_SQL, "true");
         settings.put(AvailableSettings.FORMAT_SQL, "true");
-       // settings.put(AvailableSettings.AUTOCOMMIT, "true"); по сут вообще не надо ща :) по дефолту нет автосохр в кибернейте
+
 
         settings.put(AvailableSettings.CURRENT_SESSION_CONTEXT_CLASS, "thread");
 
-        settings.put(AvailableSettings.HBM2DDL_AUTO, "update"); //update, none create-drop - убрали на посл занятии с оредерами
-        //оч важная штука!!!!!! когда запустим приложение, создадутся все таблицы по аналогии с классами чо у нас есть. но как только выключим приложение. таблицы из базы удалятся(((
-        //креат - создал, дроп - удалил в конце
-        //апдейт - данные сохраняются, дополняются, классы синхронизируются, лучше чем то что у нас сейчас
-        //ноне - будет у нас на работе, если не писать эту строку,это дефолт. обычно этим загимаются другие люди а не хибернате
+        settings.put(AvailableSettings.HBM2DDL_AUTO, "update");
         return settings;
     }
 }

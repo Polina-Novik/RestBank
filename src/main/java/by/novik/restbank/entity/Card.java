@@ -5,19 +5,17 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "animals")
+@Table(name = "card")
 
-public class Animal {
+public class Card {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private Long cardNumber;
     private String name;
-
-    @Column(name = "is_flyable")
-    private boolean isFlyable;
-
-    @Column(name = "legs_number")
-    private int legsNumber;
+    private String surname;
+    private int cvv;
+    private String date;
+    private int sum;
+    private int pin;
+    private String password;
 
 }

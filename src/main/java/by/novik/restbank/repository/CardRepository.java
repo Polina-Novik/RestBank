@@ -1,57 +1,44 @@
 package by.novik.restbank.repository;
 
 
-
-import by.novik.restexample.entity.Animal;
+import by.novik.restbank.entity.Card;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class AnimalRepository {
+public class CardRepository {
     private final SessionFactory factory;
 
-    public Animal save(Animal animal) {
+    public Card save(Card card) {
         try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            if (animal.getId() == null) {
-                session.persist(animal);
+            if (card.getCardNumber() == null) {
+                session.persist(card);
             } else {
-                session.merge(animal);
+                session.merge(card);
             }
             transaction.commit();
         }
-        return animal;
+        return card;
     }
 
-    public List<Animal> findAll() {
-        List<Animal> animals;
+    public Optional<Card> findCard(Long cardNumber) {
+        Card card = null;
         try (Session session = factory.openSession()) {
-            animals = session.createQuery("from Animal", Animal.class).getResultList();
+            card = session.find(Card.class, cardNumber);
         }
-        return animals;
+
+        return Optional.ofNullable(card);
+
     }
 
-    public Optional<Animal> findById(Long id) {
-        Animal animal = null;
-        try (Session session = factory.openSession()) {
-            animal = session.find(Animal.class, id);
-        }
-        return Optional.ofNullable(animal);
-    }
-
-
-    public void delete(Long id) {
-        try (Session session = factory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            findById(id).ifPresent(session::remove);
-            transaction.commit();
-        }
-    }
 }
+
+
+
