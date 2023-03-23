@@ -5,6 +5,7 @@ import by.novik.restbank.converter.CardConverter;
 import by.novik.restbank.dto.CardInformationResponse;
 import by.novik.restbank.dto.ClientInformationResponse;
 import by.novik.restbank.entity.Card;
+
 import by.novik.restbank.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +25,9 @@ public class CardService {
         if (card.getPassword().equals(password)) {
             return converter.convertClient(card);
         } else {
-            return null;
+            throw new RuntimeException("Wrong password");
         }
+
     }
 
     public CardInformationResponse findCardInformation(Long cardNumber, String password) {
@@ -33,7 +35,7 @@ public class CardService {
         if (card.getPassword().equals(password)) {
             return converter.convert(card);
         } else {
-            return null;
+            throw new RuntimeException("Wrong password");
         }
     }
 
@@ -43,7 +45,7 @@ public class CardService {
             card.setSum(card.getSum() - price);
             return converter.convert(repository.save(card));
         } else {
-            return null;
+            throw new RuntimeException("mistake");
         }
 
     }
@@ -57,8 +59,9 @@ public class CardService {
             converter.convert(repository.save(card2));
             return converter.convert(repository.save(card1));
         } else {
-            return null;
+            throw new RuntimeException("mistake");
         }
 
     }
+
 }
