@@ -3,7 +3,7 @@ org:
     driver: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/test_db?useSSL=false
     user: root
-    password: Stalker261986
+    password:
     dialect: org.hibernate.dialect.MySQLDialect
 
 
